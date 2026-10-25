@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: visits
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: visits
+              image: ghcr.io/kwamib/cicd-sandbox@sha256:bc935f61f9792fe48be937bde4e64215234fb5e768b4eb403760866571d16e29
+              args: ["  Production Run "]
