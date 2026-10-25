@@ -21,7 +21,7 @@ pipeline {
             sh '''
               python -m venv .venv-lint
               . .venv-lint/bin/activate
-              pip install --quiet ruff
+              pip install --quiet -r requirements-lint.txt
               ruff check .
             '''
           }
