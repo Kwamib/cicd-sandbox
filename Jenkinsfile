@@ -29,6 +29,22 @@ pipeline {
             '''
           }
         }
+        stage('Audit') {
+          agent {
+            docker {
+              image 'python:3.13-slim'
+              reuseNode true
+            }
+          }
+          steps {
+            sh '''
+              python -m venv .venv-audit
+              . .venv-audit/bin/activate
+              pip install --quiet -r requirements-audit.txt
+              pip-audit -r requirements-dev.txt
+            '''
+          }
+        }
         stage('Tests') {
           steps {
             script {
@@ -62,6 +78,17 @@ pipeline {
         sh 'docker build -t cicd-sandbox:$IMAGE_TAG .'
         sh 'docker image ls cicd-sandbox'
         sh 'docker run --rm cicd-sandbox:$IMAGE_TAG "  Smoke Test "'
+      }
+    }
+    stage('Scan') {
+      steps {
+        sh '''
+          docker save -o image.tar cicd-sandbox:$IMAGE_TAG
+          docker run --rm -v "$WORKSPACE":/work -v trivy-cache:/root/.cache \
+            aquasec/trivy@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa \
+            image --input /work/image.tar --quiet --skip-version-check --scanners vuln \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+        '''
       }
     }
     stage('Push') {
