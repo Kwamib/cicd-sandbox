@@ -79,7 +79,6 @@ pipeline {
   post {
     always {
       sh 'docker logout ghcr.io || true'
-      sh 'docker image rm -f cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG 2>/dev/null || true'
     }
     cleanup {
       deleteDir()
