@@ -1,6 +1,6 @@
 def clean_name(name):
     """Trim spaces and lowercase a page name, so 'Home ' and 'home' count as one page."""
-    cleaned = name.strip().lower()
+    cleaned = name.strip()
     if not cleaned:
         raise ValueError("page name can't be empty")
     return cleaned
