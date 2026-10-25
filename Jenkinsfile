@@ -102,6 +102,21 @@ pipeline {
         }
       }
     }
+    stage('Deploy') {
+      when {
+        expression { env.GIT_BRANCH == 'origin/main' }
+      }
+      steps {
+        input message: 'Deploy this image to production?', ok: 'Deploy'
+        sh '''
+          REF=$(docker image inspect --format '{{index .RepoDigests 0}}' ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG)
+          echo "Deploying $REF"
+          docker image rm cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG
+          docker pull "$REF"
+          docker run --rm "$REF" "  Jenkins Production "
+        '''
+      }
+    }
   }
   post {
     always {
