@@ -41,7 +41,7 @@ pipeline {
               python -m venv .venv-audit
               . .venv-audit/bin/activate
               pip install --quiet -r requirements-audit.txt
-              pip-audit -r requirements-dev.txt
+              pip-audit --cache-dir .pip-audit-cache -r requirements-dev.txt
             '''
           }
         }
