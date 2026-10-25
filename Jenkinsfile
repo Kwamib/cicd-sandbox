@@ -53,7 +53,12 @@ pipeline {
     }
     stage('Build') {
       steps {
-        echo "Would build an image for build ${env.BUILD_NUMBER}"
+        script {
+          env.IMAGE_TAG = "1.0.${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
+        }
+        sh 'docker build -t cicd-sandbox:$IMAGE_TAG .'
+        sh 'docker image ls cicd-sandbox'
+        sh 'docker run --rm cicd-sandbox:$IMAGE_TAG "  Smoke Test "'
       }
     }
   }
