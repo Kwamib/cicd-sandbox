@@ -109,7 +109,8 @@ pipeline {
       steps {
         input message: 'Deploy this image to production?', ok: 'Deploy'
         sh '''
-          REF=$(docker image inspect --format '{{index .RepoDigests 0}}' ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG)
+          DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG | cut -d@ -f2)
+          REF=ghcr.io/kwamib/cicd-sandbox-jenkins@$DIGEST
           echo "Deploying $REF"
           docker image rm cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG
           docker pull "$REF"
