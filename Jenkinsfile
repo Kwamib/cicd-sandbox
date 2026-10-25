@@ -2,10 +2,13 @@ pipeline {
   agent any
   options {
     timeout(time: 15, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    disableConcurrentBuilds(abortPrevious: true)
   }
   environment {
     PIP_DISABLE_PIP_VERSION_CHECK = '1'
     PIP_NO_CACHE_DIR = '1'
+    CI = 'true'
   }
   stages {
     stage('Checks') {
@@ -76,6 +79,9 @@ pipeline {
   post {
     always {
       sh 'docker logout ghcr.io || true'
+    }
+    cleanup {
+      deleteDir()
     }
   }
 }
