@@ -32,8 +32,8 @@ pipeline {
         stage('Tests') {
           steps {
             script {
-              docker.image('postgres:17').withRun("--label sandbox-build=${env.BUILD_TAG} -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=visits_test") { pg ->
-                docker.image('redis:7.2.7-alpine').withRun("--label sandbox-build=${env.BUILD_TAG}") { rd ->
+              docker.image('postgres:17').withRun('--label sandbox-sidecar -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=visits_test') { pg ->
+                docker.image('redis:7.2.7-alpine').withRun('--label sandbox-sidecar') { rd ->
                   docker.image('postgres:17').inside("--link ${pg.id}:db") {
                     sh 'until pg_isready -h db -U postgres; do sleep 1; done'
                   }
@@ -79,7 +79,7 @@ pipeline {
   post {
     always {
       sh 'docker logout ghcr.io || true'
-      sh 'docker ps -aq --filter "label=sandbox-build=$BUILD_TAG" | xargs -r docker rm -f -v'
+      sh 'docker ps -aq --filter label=sandbox-sidecar | xargs -r docker rm -f -v'
       sh 'docker image rm -f cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG 2>/dev/null || true'
     }
     cleanup {
