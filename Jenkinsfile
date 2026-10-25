@@ -64,8 +64,8 @@ pipeline {
     stage('Push') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          sh "echo ${GHCR_TOKEN} | docker login ghcr.io -u ${GHCR_USER} --password-stdin"
           sh '''
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             docker tag cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG
             docker push ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG
           '''
