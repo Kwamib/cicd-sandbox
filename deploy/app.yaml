@@ -15,5 +15,5 @@ spec:
           restartPolicy: Never
           containers:
             - name: visits
-              image: ghcr.io/kwamib/cicd-sandbox@sha256:b13eb29d9b81b0813b983188824cb697dbaeb02454df834a811969520ab14835
+              image: ghcr.io/kwamib/cicd-sandbox@sha256:dd4ac790dd2473b6d6c55867d5a7d58731e8dd0ea8e0bfd18c4dcc4c231693c3
               args: ["  Production Run "]
