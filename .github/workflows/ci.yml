@@ -88,12 +88,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  secret-demo:
-    runs-on: ubuntu-24.04
-    steps:
-      - run: echo "The secret is $DEMO_SECRET"
-        env:
-          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
-      - run: echo "$DEMO_SECRET" | rev
-        env:
-          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
