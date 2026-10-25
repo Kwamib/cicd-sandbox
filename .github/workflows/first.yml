@@ -21,7 +21,7 @@ jobs:
     needs: where-am-i
     runs-on: ubuntu-24.04
     steps:
-      - run: echo "Tests would run here"
+      - run: exit 1
 
   helm:
     needs: where-am-i
