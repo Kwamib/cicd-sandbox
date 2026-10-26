@@ -5,6 +5,9 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds(abortPrevious: true)
   }
+  triggers {
+    pollSCM('H/2 * * * *')
+  }
   environment {
     PIP_DISABLE_PIP_VERSION_CHECK = '1'
     PIP_NO_CACHE_DIR = '1'
@@ -48,8 +51,8 @@ pipeline {
         stage('Tests') {
           steps {
             script {
-              docker.image('postgres:17').withRun('-e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=visits_test') { pg ->
-                docker.image('redis:7.2.7-alpine').withRun() { rd ->
+              docker.image('postgres:17').withRun("--label sandbox-build=${env.BUILD_TAG} -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=visits_test") { pg ->
+                docker.image('redis:7.2.7-alpine').withRun("--label sandbox-build=${env.BUILD_TAG}") { rd ->
                   docker.image('postgres:17').inside("--link ${pg.id}:db") {
                     sh 'until pg_isready -h db -U postgres; do sleep 1; done'
                   }
@@ -104,7 +107,10 @@ pipeline {
     }
     stage('Deploy') {
       when {
-        expression { env.GIT_BRANCH == 'origin/main' }
+        allOf {
+          expression { env.GIT_BRANCH == 'origin/main' }
+          triggeredBy 'UserIdCause'
+        }
       }
       steps {
         input message: 'Deploy this image to production?', ok: 'Deploy'
@@ -115,6 +121,7 @@ pipeline {
           docker image rm cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG
           docker pull "$REF"
           docker run --rm "$REF" "  Jenkins Production "
+          docker image rm "$REF"
         '''
       }
     }
@@ -122,6 +129,8 @@ pipeline {
   post {
     always {
       sh 'docker logout ghcr.io || true'
+      sh 'docker ps -aq --filter "label=sandbox-build=$BUILD_TAG" | xargs -r docker rm -f -v'
+      sh 'docker image rm cicd-sandbox:$IMAGE_TAG ghcr.io/kwamib/cicd-sandbox-jenkins:$IMAGE_TAG 2>/dev/null || true'
     }
     cleanup {
       deleteDir()
