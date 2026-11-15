@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.15-slim
 RUN python -m pip uninstall -y pip
 WORKDIR /srv
 COPY app/ app/
